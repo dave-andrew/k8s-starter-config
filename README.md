@@ -36,4 +36,36 @@ This repository contains Ansible playbooks to automate the setup of various comp
    ```bash
    git clone https://github.com/dave-andrew/k8s-starter-config.git
    cd k8s-starter-config
+
+2. **Create Ansible Configuration:**
+   ```bash
+   vi /etc/ansible/ansible.cfg
+   
+   [defaults]
+   inventory=/etc/ansible/hosts
+   cache=None
+   host_key_checking = False
+   remote_user = root
+
+3. **Create Default Ansible Inventory:**
+   ```bash
+   vi /etc/ansible/hosts
+
+   [control-planes]
+   10.22.77.81
+   10.22.77.82
+   10.22.77.83
+
+   [workers]
+   10.22.77.90
+   10.22.77.91
+   10.22.77.92
+
+   [all:vars]
+   registry_url="registry-url.net"
+   registry_port="5000"
+   virtual_ip="10.22.77.89"
+
+2. **Execute the playbook command:**
+   ```bash
    ansible-playbook playbook.yaml
