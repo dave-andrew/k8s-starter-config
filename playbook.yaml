@@ -1,0 +1,35 @@
+---
+- name: Setup Flux
+  hosts: control-planes
+  become: true
+  tasks:
+    - name: Include Flux setup tasks
+      ansible.builtin.include_tasks: flux/setup.yaml
+
+- name: Setup Helm
+  hosts: control-planes
+  become: true
+  tasks:
+    - name: Include Helm setup tasks
+      ansible.builtin.include_tasks: helm/setup.yaml
+
+- name: Setup Load Balancer
+  hosts: control-planes
+  become: true
+  tasks:
+    - name: Include Load Balancer setup tasks
+      ansible.builtin.include_tasks: load_balancer/setup.yaml
+
+- name: Setup SOPS
+  hosts: control-planes
+  become: true
+  tasks:
+    - name: Include SOPS setup tasks
+      ansible.builtin.include_tasks: sops/setup.yaml
+
+- name: Setup Registry
+  hosts: all
+  become: true
+  tasks:
+    - name: Include Registry setup tasks
+      ansible.builtin.include_tasks: registry/setup.yaml

@@ -1,0 +1,15 @@
+---
+- name: Run FluxCD installation script
+  shell: curl -s https://fluxcd.io/install.sh | sudo bash
+  register: flux_install
+  ignore_errors: yes
+
+- name: Display FluxCD installation result
+  debug:
+    msg: "{{ flux_install.stdout }}"
+  when: flux_install.rc == 0
+
+- name: Report FluxCD installation failure
+  debug:
+    msg: "FluxCD installation failed with return code {{ flux_install.rc }}."
+  when: flux_install.rc != 0

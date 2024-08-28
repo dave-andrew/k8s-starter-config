@@ -1,0 +1,20 @@
+---
+- name: Getting Public Key
+  shell: curl -s https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
+
+- name: Get Dependency
+  apt:
+    name: apt-transport-https
+    state: present
+
+- name: Use Public Key
+  shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+
+- name: Update Repository
+  apt:
+    update_cache: yes
+
+- name: Install Helm
+  apt:
+    name: helm
+    state: present

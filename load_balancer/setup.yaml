@@ -1,0 +1,83 @@
+---
+- name: Install HAProxy
+  ansible.builtin.apt:
+    name: haproxy
+    state: present
+
+- name: Pre-Configuration
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    line: net.ipv4.ip_nonlocal_bind=1
+
+- name: Apply Pre-Configuration
+  ansible.builtin.shell: sysctl -p
+
+- name: HAProxy Configuration
+  blockinfile:
+    path: /etc/haproxy/haproxy.cfg
+    block: |
+      frontend k8s-api
+          bind {{ virtual_ip }}:6444
+          mode tcp
+          option tcplog
+          default_backend k8s-api-backend
+
+      # Backend configuration: Distributes traffic to all master nodes
+      backend k8s-api-backend
+          balance roundrobin
+          option tcp-check
+          mode tcp
+          option tcplog
+          server control-planes-1 {{ groups['control-planes'][0] }}:6443 check
+          server control-planes-2 {{ groups['control-planes'][1] }}:6443 check
+          server control-planes-3 {{ groups['control-planes'][2] }}:6443 check
+    state: present
+    create: yes
+    mode: '0644'
+
+- name: Apply HAProxy Configuration
+  ansible.builtin.systemd:
+    name: haproxy
+    state: restarted
+
+- name: Install Keepalived
+  ansible.builtin.apt:
+    name: keepalived
+    state: present
+
+- name: Create Keepalived Configuration File
+  file:
+    path: "/etc/keepalived/keepalived.conf"
+    state: touch
+    mode: 0644
+    owner: root
+
+- name: Keepalived Configuration
+  blockinfile:
+    path: /etc/keepalived/keepalived.conf
+    block: |
+      vrrp_script check_haproxy {
+        script "killall -0 haproxy"  # Check if haproxy is running
+        interval 2                   # Check every 2 seconds
+        weight 2                     # Add 2 points of priority if the script succeeds
+      }
+
+      vrrp_instance VI_1 {dd
+        state BACKUP                 # Use BACKUP on all nodes; set to MASTER on one node
+        interface eth0               # Network interface to bind the virtual IP
+        virtual_router_id 51         # Unique identifier for the VRRP instance
+        priority 101                 # Adjust priority; higher number is preferred
+
+        virtual_ipaddress {
+          {{ virtual_ip }}/24         # Floating IP address; ensure this IP is unique and valid
+        }
+
+        track_script {
+          check_haproxy              # Track the script to monitor haproxy's status
+        }
+      }
+
+- name: Apply Keepalived Configuration
+  ansible.builtin.systemd:
+    name: keepalived
+    state: restarted

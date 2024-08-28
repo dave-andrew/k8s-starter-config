@@ -1,0 +1,18 @@
+---
+- name: Ensure the containerd config file is updated
+  blockinfile:
+    path: /etc/containerd/config.toml
+    block: |5
+                  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{registry_url}}:{{registry_port}}"]
+                    endpoint = ["http://{{registry_url}}:{{registry_port}}"]
+              [plugins."io.containerd.grpc.v1.cri".registry.configs]
+                [plugins."io.containerd.grpc.v1.cri".registry.configs."{{registry_url}}:{{registry_port}}".tls]
+                  insecure_skip_verify = true
+    state: present
+    create: yes
+    mode: '0644'
+
+- name: Restart containerd service
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
