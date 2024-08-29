@@ -33,3 +33,10 @@
   tasks:
     - name: Include Registry setup tasks
       ansible.builtin.include_tasks: registry/setup.yaml
+
+- name: Kubernetes Alias
+  hosts: control-planes
+  become: true
+  tasks:
+    - name: Include Kubernetes Alias
+      ansible.builtin.include_tasks: alias/setup.yaml

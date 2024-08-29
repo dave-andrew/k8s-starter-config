@@ -1,0 +1,23 @@
+---
+- name: Add Kubernetes Aliases
+  blockinfile:
+    path: /root/.bashrc
+    block: |
+      alias k='kubectl'
+      alias kgp='kubectl get pods'
+      alias kgsvc='kubectl get service'
+      alias kgs='kubectl get secrets'
+      alias kga='kubectl get all'
+      alias kgd='kubectl get deployments'
+      alias kdp='kubectl describe pods'
+      alias kdsvc='kubectl describe service'
+      alias kds='kubectl describe secrets'
+      alias kdd='kubectl describe deployments'
+      alias kes='kubectl edit secrets'
+    state: present
+
+- name: Source .bashrc
+  shell: source /root/.bashrc
+  args:
+    executable: /bin/bash
+  register: source_bashrc
