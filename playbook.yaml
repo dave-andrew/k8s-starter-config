@@ -27,7 +27,7 @@
     - name: Include SOPS setup tasks
       ansible.builtin.include_tasks: sops/setup.yaml
 
-- name: Setup Registry
+- name: Setup Insecure Registry
   hosts: all
   become: true
   tasks:
